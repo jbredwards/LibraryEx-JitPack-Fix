@@ -1,8 +1,6 @@
-apply plugin: 'net.minecraftforge.gradle.forge'
-
 buildscript {
     repositories {
-        jcenter()
+        mavenCentral()
         maven {
             name = "forge"
             url = "http://files.minecraftforge.net/maven"
@@ -12,6 +10,9 @@ buildscript {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
     }
 }
+
+apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'maven-publish'
 
 version = mod_version
 group = "com.github.logictechcorp"
@@ -50,10 +51,35 @@ processResources {
     }
 }
 
+task deobfJar(type: Jar) {
+    from sourceSets.main.output
+    classifier = 'deobf'
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allJava
+    classifier = 'sources'
+}
+
+artifacts {
+    archives deobfJar
+    archives sourcesJar
+}
+
 jar {
     manifest {
         attributes([
                 'ContainedDeps': "night-config-core-${night_config_version}.jar night-config-json-${night_config_version}.jar"
         ])
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact jar
+            artifact deobfJar
+            artifact sourcesJar
+        }
     }
 }
